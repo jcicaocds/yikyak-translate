@@ -13,7 +13,9 @@ import androidx.fragment.app.viewModels
 import com.yikyaktranslate.presentation.theme.YikYakTranslateTheme
 import com.yikyaktranslate.presentation.view.TranslateView
 import com.yikyaktranslate.presentation.viewmodel.TranslateViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class TranslateFragment : Fragment() {
 
     private val translateViewModel: TranslateViewModel by viewModels()

@@ -1,25 +1,26 @@
 package com.yikyaktranslate.presentation.viewmodel
 
-import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.yikyaktranslate.R
-import com.yikyaktranslate.model.Language
-import com.yikyaktranslate.service.face.TranslationService
+import com.yikyaktranslate.data.model.Language
+import com.yikyaktranslate.data.repository.TranslationRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-class TranslateViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val translationService = TranslationService.create()
+@HiltViewModel
+class TranslateViewModel @Inject constructor(
+    private val translationRepository: TranslationRepository,
+) : ViewModel() {
 
     // Code for the source language that we are translating from; currently hardcoded to English
-    private val sourceLanguageCode: String = application.getString(R.string.source_language_code)
+    private val sourceLanguageCode: String = "en"
 
     // List of Languages that we get from the back end
     private val languages: MutableStateFlow<List<Language>> by lazy {
@@ -48,7 +49,7 @@ class TranslateViewModel(application: Application) : AndroidViewModel(applicatio
     private fun loadLanguages() {
         viewModelScope.launch {
             val availableLanguages = try {
-                translationService.getLanguages()
+                translationRepository.getLanguages()
             } catch (exception: Exception) {
                 Log.e(javaClass.name, exception.toString())
                 emptyList()
@@ -66,7 +67,7 @@ class TranslateViewModel(application: Application) : AndroidViewModel(applicatio
 
         viewModelScope.launch {
             val translatedText = try {
-                translationService
+                translationRepository
                     .translate(
                         text = textToTranslate.value?.text.orEmpty(),
                         source = sourceLanguageCode,
