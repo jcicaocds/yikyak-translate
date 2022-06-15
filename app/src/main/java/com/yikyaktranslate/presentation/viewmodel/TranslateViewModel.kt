@@ -8,11 +8,10 @@ import androidx.lifecycle.*
 import com.yikyaktranslate.R
 import com.yikyaktranslate.model.Language
 import com.yikyaktranslate.service.face.TranslationService
+import java.lang.Exception
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.launch
 
 class TranslateViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -41,22 +40,15 @@ class TranslateViewModel(application: Application) : AndroidViewModel(applicatio
      */
     private fun loadLanguages() {
         val translationService = TranslationService.create()
-        val call = translationService.getLanguages()
-        call.enqueue(object : Callback<List<Language>> {
-            override fun onResponse(
-                call: Call<List<Language>>,
-                response: Response<List<Language>>
-            ) {
-                if (response.body() != null) {
-                    languages.value = response.body()!!
-                }
+        viewModelScope.launch {
+            val availableLanguages = try {
+                translationService.getLanguages()
+            } catch (exception: Exception) {
+                Log.e(javaClass.name, exception.toString())
+                emptyList()
             }
-
-            override fun onFailure(call: Call<List<Language>>, t: Throwable) {
-                t.message?.let { Log.e(javaClass.name, it) }
-                languages.value = listOf()
-            }
-        })
+            languages.value = availableLanguages
+        }
     }
 
     /**
